@@ -1,7 +1,3 @@
-Voici un exemple de fichier `README.md` qui explique le fonctionnement du code fourni. Ce fichier est structuré pour être clair et utile à quiconque souhaite comprendre ou utiliser cette fonction.
-
----
-
 # Extract Path from Line
 
 Ce projet contient une fonction Rust nommée `extract_path_from_line`, qui extrait un chemin de fichier ou de dossier à partir d'une ligne de texte en ignorant les commentaires et en prenant en compte différents formats de structure.
