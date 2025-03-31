@@ -1,0 +1,24 @@
+[package]
+name = "screen-cast-structure-generator"
+version = "0.1.0"
+edition = "2021"  # Note: 2024 n'existe pas encore comme édition
+
+[dependencies]
+# Pour les expressions régulières
+regex = "1.9.5"
+
+# Pour la gestion des chemins
+walkdir = "2.4.0"
+
+# Pour l'analyse des arguments de ligne de commande
+clap = { version = "4.4", features = ["derive"] }
+
+# Pour une meilleure gestion des erreurs
+anyhow = "1.0.75"
+
+# Pour de meilleures messages d'erreur formatés
+color-eyre = "0.6.2"
+
+# Pour la journalisation
+log = "0.4.20"
+env_logger = "0.10.0"
