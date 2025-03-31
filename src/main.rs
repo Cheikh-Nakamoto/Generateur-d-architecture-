@@ -1,6 +1,6 @@
 use std::fs::{self, File};
-use std::io::{self, Read, Write};
-use std::path::{Path, PathBuf};
+use std::io::{self, Read};
+use std::path::{PathBuf};
 use regex::Regex;
 
 /// Creer une structure de dossiers et fichiers à partir du contenu d'un README.md
