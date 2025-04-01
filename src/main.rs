@@ -1,6 +1,8 @@
+
 use std::fs::{self, File};
 use std::io::{self, Read};
-use std::path::{PathBuf};
+use std::path::PathBuf;
+
 use regex::Regex;
 
 /// Creer une structure de dossiers et fichiers à partir du contenu d'un README.md
@@ -50,15 +52,14 @@ pub fn create_project_structure(readme_path: &str, output_dir: &str) -> io::Resu
 }
 /// Extrait la structure de dossiers d'un contenu de README
 fn extract_directory_structure(content: &str) -> Vec<String> {
-    let mut paths = Vec::new();
-    
+    let mut paths =vec![];
+    let mut root_directory = String::new();
+    let mut prev_line = String::new();
     // Rechercher les blocs de code qui contiennent des structures de dossiers
     let code_block_regex = Regex::new(r"```(?:plaintext|bash|sh|txt|)\s*([\s\S]*?)```").unwrap();
-    
     for captures in code_block_regex.captures_iter(content) {
         if let Some(code_block) = captures.get(1) {
             let block_content = code_block.as_str();
-            
             // Verifier si c'est une structure de dossier
             if block_content.contains("/") || block_content.contains("\\") {
                 // Extraire les chemins
@@ -73,61 +74,66 @@ fn extract_directory_structure(content: &str) -> Vec<String> {
                     
                     // Extraire le chemin de la ligne
                     let path = extract_path_from_line(cleaned_line);
-                    if let Some(path) = path {
-                        paths.push(path);
-                    }
+                    // if i == 0 {
+                    //     root_directory = path.clone().unwrap_or_default();
+                    // }
+                   if !path.clone().unwrap_or_default().contains("."){
+                    remake_root_directory(prev_line, cleaned_line.to_string(), &mut root_directory, &path.clone().unwrap_or_default());
+                    prev_line = cleaned_line.to_owned();
+                    paths.push(root_directory.clone());
+                   }else{
+                        let filepah = format!("{}/{}",root_directory,path.unwrap_or_default());
+                        paths.push(filepah);
+                   }
+                   
                 }
             }
         }
     }
-    
-    // Extraire egalement la structure à partir des indentations
-    let indentation_regex = Regex::new(r"(?m)^[ \t]*[├└]─+\s+([^/\n]+)(/?)$").unwrap();
-    
-    let mut current_path = Vec::new();
-    let mut previous_indent = 0;
-    
-    for line in content.lines() {
-        if line.contains("├─") || line.contains("└─") || line.contains("│") {
-            // Calculer l'indentation
-            let indent = line.chars().take_while(|&c| c == ' ' || c == '│' || c == '\t').count();
-            
-            // Ajuster le chemin actuel en fonction de l'indentation
-            if indent < previous_indent {
-                let levels_to_pop = (previous_indent - indent) / 2 + 1;
-                for _ in 0..levels_to_pop {
-                    current_path.pop();
-                }
-            } else if indent == previous_indent && !current_path.is_empty() {
-                current_path.pop();
-            }
-            
-            // Extraire le nom du fichier ou dossier
-            if let Some(captures) = indentation_regex.captures(line) {
-                let name = captures.get(1).unwrap().as_str().trim();
-                let is_dir = captures.get(2).map_or(false, |m| m.as_str() == "/");
-                
-                current_path.push(name.to_string());
-                let path_str = current_path.join("/");
-                
-                if is_dir {
-                    paths.push(format!("{}/", path_str));
-                } else {
-                    paths.push(path_str);
-                }
-            }
-            
-            previous_indent = indent;
-        }
-    }
-    
-    // Deduplication et tri
     paths.sort();
     paths.dedup();
     
     paths
 }
 
+fn remake_root_directory(prev_line: String, line: String, root_directory: &mut String, current_dir: &str) {
+    let prev_indent = pipe_count(split_on_first_letter(prev_line.clone()).unwrap_or_default().0);
+    let curent_indent = pipe_count(split_on_first_letter(line).unwrap_or_default().0);
+    // Calculer la différence d'indentation
+   
+    if curent_indent < prev_indent {
+        let  diff_index = (curent_indent)as i8 -( prev_indent)as i8;
+        let parts: Vec<&str> = root_directory.split('/').collect();
+        
+        let elem = format!("{}/{}", parts[..(parts.len() as i8-1 + diff_index) as usize].join("/"), current_dir);
+        let mut parts: Vec<&str> = elem.split('/').collect();
+        parts.retain(|a| !a.is_empty());
+        *root_directory = parts.join("/");
+    } else  {
+        let mut parts: Vec<&str> = root_directory.split('/').collect();
+        if curent_indent == prev_indent &&  !split_on_first_letter(prev_line.clone()).unwrap_or_default().0.is_empty() {
+            parts.pop();
+        }
+        let elem = format!("{}/{}", parts.join("/"), current_dir);
+        let mut parts: Vec<&str> = elem.split('/').collect();
+        parts.retain(|a| !a.is_empty());
+        *root_directory = parts.join("/");
+    }
+    
+}
+
+fn pipe_count(s:String) -> usize{
+    return s.matches("│   ").count();
+}
+
+fn split_on_first_letter(s: String) -> Option<(String, String)> {
+    let re = Regex::new(r"([A-Za-z].*)").unwrap();
+    if let Some(cap) = re.captures(&s) {
+        let start = cap.get(1).unwrap().start();
+        return Some((s[..start].to_owned(), s[start..].to_owned()));
+    }
+    None
+}
 /// Extrait un chemin de fichier ou de dossier à partir d'une ligne
 /// en ignorant les commentaires après le caractère #
 fn extract_path_from_line(line: &str) -> Option<String> {
