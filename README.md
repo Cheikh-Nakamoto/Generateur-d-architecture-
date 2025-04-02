@@ -1,3 +1,8 @@
+
+<div align="center">
+    <img src="./src/assets/ferris.png" alt="Logo du projet" width="300">
+</div>
+
 # Générateur de Structure de Projet
 
 ## Description
