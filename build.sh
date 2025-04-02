@@ -1,177 +1,182 @@
 #!/bin/bash
 
 # Script de build et d'installation pour le Générateur de Structure de Projet
-# Ce script détecte le système d'exploitation et construit l'application en conséquence
+# Version améliorée avec meilleure gestion des erreurs et support multi-plateforme
 
-set -e # Sortir en cas d'erreur
+set -euo pipefail
 
+# Configuration
 PROJECT_NAME="projet-structure-generator"
 VERSION="1.0.0"
 ICON_PATH="./src/assets/ferris.png"
 DESKTOP_FILE="$PROJECT_NAME.desktop"
 
-# Fonction pour afficher des messages stylisés
+# Couleurs pour les messages
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+BLUE='\033[1;34m'
+NC='\033[0m'
+
+# Fonctions d'affichage
 print_status() {
-    echo -e "\e[1;34m[INFO]\e[0m $1"
+    echo -e "${BLUE}[INFO]${NC} $1"
 }
 
 print_success() {
-    echo -e "\e[1;32m[SUCCESS]\e[0m $1"
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
 print_error() {
-    echo -e "\e[1;31m[ERROR]\e[0m $1"
+    echo -e "${RED}[ERROR]${NC} $1" >&2
     exit 1
 }
 
-# Vérifier si rust est installé
-if ! command -v cargo &> /dev/null; then
-    print_error "Rust n'est pas installé. Veuillez installer Rust avant de continuer: https://rustup.rs/"
-fi
+# Vérifier les dépendances
+check_dependencies() {
+    if ! command -v cargo &> /dev/null; then
+        print_error "Rust n'est pas installé. Veuillez installer Rust via https://rustup.rs/"
+    fi
 
-# Détecter le système d'exploitation
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    OS="linux"
-    TARGET_DIR="$HOME/.local/bin"
-    DESKTOP_DIR="$HOME/.local/share/applications"
-    ICON_DIR="$HOME/.local/share/icons/hicolor/128x128/apps"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    OS="macos"
-    TARGET_DIR="/Applications"
-    # macOS utilise des .app bundles, nous les traiterons différemment
-elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* || "$OSTYPE" == "win32" ]]; then
-    OS="windows"
-    TARGET_DIR="$APPDATA/Programs/$PROJECT_NAME"
-    DESKTOP_DIR="$APPDATA/Microsoft/Windows/Start Menu/Programs"
-else
-    print_error "Système d'exploitation non supporté: $OSTYPE"
-fi
-
-print_status "Système d'exploitation détecté: $OS"
-print_status "Début de la compilation..."
-
-# Compiler le programme en mode release
-cargo build --release || print_error "Échec de la compilation"
-
-print_success "Compilation terminée avec succès!"
-
-# Créer les répertoires d'installation si nécessaire
-create_directories() {
-    if [[ "$OS" == "linux" ]]; then
-        mkdir -p "$TARGET_DIR" "$DESKTOP_DIR" "$ICON_DIR"
-    elif [[ "$OS" == "windows" ]]; then
-        mkdir -p "$TARGET_DIR" "$DESKTOP_DIR"
+    if [[ "$OSTYPE" == "darwin"* ]] && ! command -v create-dmg &> /dev/null; then
+        print_status "Installez create-dmg pour créer un bundle macOS: brew install create-dmg"
     fi
 }
 
-# Installer l'application
-install_application() {
-    if [[ "$OS" == "linux" ]]; then
-        # Copier l'exécutable
-        cp "target/release/$PROJECT_NAME" "$TARGET_DIR/"
-        chmod +x "$TARGET_DIR/$PROJECT_NAME"
-        
-        # Installer l'icône
-        cp "$ICON_PATH" "$ICON_DIR/$PROJECT_NAME.png"
-        
-        # Créer un fichier desktop
-        cat > "$DESKTOP_DIR/$DESKTOP_FILE" << EOF
+# Détection du système d'exploitation
+detect_os() {
+    case "$OSTYPE" in
+        linux-gnu*)  OS="linux" ;;
+        darwin*)     OS="macos" ;;
+        msys*|cygwin*|win32*) OS="windows" ;;
+        *)           print_error "Système non supporté: $OSTYPE" ;;
+    esac
+
+    print_status "Système détecté: $OS"
+}
+
+# Compilation du projet
+compile_project() {
+    print_status "Compilation en cours..."
+    if ! cargo build --release; then
+        print_error "Échec de la compilation"
+    fi
+    print_success "Compilation réussie"
+}
+
+# Installation pour Linux
+install_linux() {
+    local target_dir="${HOME}/.local/bin"
+    local desktop_dir="${HOME}/.local/share/applications"
+    local icon_dir="${HOME}/.local/share/icons/hicolor/128x128/apps"
+
+    mkdir -p "$target_dir" "$desktop_dir" "$icon_dir"
+
+    # Copie des fichiers
+    cp "target/release/${PROJECT_NAME}" "$target_dir/"
+    chmod +x "$target_dir/${PROJECT_NAME}"
+    cp "$ICON_PATH" "$icon_dir/${PROJECT_NAME}.png"
+
+    # Création du fichier .desktop
+    cat > "$desktop_dir/$DESKTOP_FILE" <<EOF
 [Desktop Entry]
+Version=${VERSION}
 Name=Générateur de Structure de Projet
 Comment=Génère une structure de projet à partir d'un fichier README.md
-Exec=$TARGET_DIR/$PROJECT_NAME
-Icon=$PROJECT_NAME
+Exec=${target_dir}/${PROJECT_NAME}
+Icon=${PROJECT_NAME}
 Terminal=false
 Type=Application
 Categories=Development;Utility;
 EOF
-        
-        print_status "Mise à jour de la base de données desktop..."
-        update-desktop-database "$DESKTOP_DIR" 2>/dev/null || true
 
-    elif [[ "$OS" == "macos" ]]; then
-        # Créer un bundle macOS .app
-        print_status "Création du bundle macOS..."
-        
-        # Utiliser cargo-bundle si disponible
-        if command -v cargo-bundle &> /dev/null; then
-            cargo bundle --release || print_error "Échec de la création du bundle"
-            cp -r "target/release/bundle/osx/$PROJECT_NAME.app" "$TARGET_DIR/"
-        else
-            print_status "cargo-bundle n'est pas installé. Installation basique..."
-            mkdir -p "$TARGET_DIR/$PROJECT_NAME.app/Contents/MacOS"
-            mkdir -p "$TARGET_DIR/$PROJECT_NAME.app/Contents/Resources"
-            
-            # Copier l'exécutable
-            cp "target/release/$PROJECT_NAME" "$TARGET_DIR/$PROJECT_NAME.app/Contents/MacOS/"
-            
-            # Copier l'icône
-            cp "$ICON_PATH" "$TARGET_DIR/$PROJECT_NAME.app/Contents/Resources/"
-            
-            # Créer le fichier Info.plist
-            cat > "$TARGET_DIR/$PROJECT_NAME.app/Contents/Info.plist" << EOF
+    update-desktop-database "$desktop_dir" || true
+}
+
+# Installation pour macOS
+install_macos() {
+    local app_dir="/Applications/${PROJECT_NAME}.app"
+    local contents_dir="${app_dir}/Contents"
+    local macos_dir="${contents_dir}/MacOS"
+    local resources_dir="${contents_dir}/Resources"
+
+    # Création de la structure .app
+    rm -rf "$app_dir"
+    mkdir -p "$macos_dir" "$resources_dir"
+
+    # Copie des fichiers
+    cp "target/release/${PROJECT_NAME}" "$macos_dir/"
+    cp "$ICON_PATH" "$resources_dir/"
+
+    # Création du fichier Info.plist
+    cat > "$contents_dir/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>CFBundleExecutable</key>
-    <string>$PROJECT_NAME</string>
+    <string>${PROJECT_NAME}</string>
     <key>CFBundleIconFile</key>
     <string>ferris.png</string>
     <key>CFBundleIdentifier</key>
-    <string>com.example.$PROJECT_NAME</string>
+    <string>com.example.${PROJECT_NAME}</string>
     <key>CFBundleName</key>
     <string>Générateur de Structure de Projet</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>$VERSION</string>
+    <string>${VERSION}</string>
 </dict>
 </plist>
 EOF
-        fi
 
-    elif [[ "$OS" == "windows" ]]; then
-        # Installer sur Windows
-        print_status "Installation sur Windows..."
-        
-        # Copier l'exécutable
-        cp "target/release/$PROJECT_NAME.exe" "$TARGET_DIR/"
-        
-        # Copier l'icône
-        cp "$ICON_PATH" "$TARGET_DIR/"
-        
-        # Créer un raccourci
-        if command -v powershell &> /dev/null; then
-            powershell -Command "
-                \$WshShell = New-Object -comObject WScript.Shell
-                \$Shortcut = \$WshShell.CreateShortcut('$DESKTOP_DIR\\Générateur de Structure de Projet.lnk')
-                \$Shortcut.TargetPath = '$TARGET_DIR\\$PROJECT_NAME.exe'
-                \$Shortcut.IconLocation = '$TARGET_DIR\\ferris.png'
-                \$Shortcut.Save()
-            "
-        else
-            print_status "PowerShell n'est pas disponible. Le raccourci n'a pas été créé."
-        fi
+    # Fix des permissions
+    chmod -R 755 "$app_dir"
+}
+
+# Installation pour Windows
+install_windows() {
+    local target_dir="${APPDATA}\\Programs\\${PROJECT_NAME}"
+    local start_menu_dir="${APPDATA}\\Microsoft\\Windows\\Start Menu\\Programs"
+
+    mkdir -p "$target_dir" "$start_menu_dir"
+
+    # Copie des fichiers
+    cp "target/release/${PROJECT_NAME}.exe" "$target_dir/"
+    cp "$ICON_PATH" "$target_dir/"
+
+    # Création du raccourci
+    if command -v powershell &> /dev/null; then
+        powershell -Command "\
+            \$ws = New-Object -ComObject WScript.Shell; \
+            \$sc = \$ws.CreateShortcut('${start_menu_dir}\\${PROJECT_NAME}.lnk'); \
+            \$sc.TargetPath = '${target_dir}\\${PROJECT_NAME}.exe'; \
+            \$sc.IconLocation = '${target_dir}\\ferris.png'; \
+            \$sc.Save()"
     fi
 }
 
-# Exécuter l'installation
-create_directories
-install_application
-
-print_success "Installation terminée!"
-print_status "Vous pouvez maintenant lancer l'application depuis votre menu d'applications ou en exécutant '$PROJECT_NAME'."
-
-# Proposer de lancer l'application
-read -p "Voulez-vous lancer l'application maintenant? (o/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Oo]$ ]]; then
-    if [[ "$OS" == "linux" ]]; then
-        "$TARGET_DIR/$PROJECT_NAME" &
-    elif [[ "$OS" == "macos" ]]; then
-        open "$TARGET_DIR/$PROJECT_NAME.app"
-    elif [[ "$OS" == "windows" ]]; then
-        start "$TARGET_DIR/$PROJECT_NAME.exe"
+# Lancement de l'application
+launch_application() {
+    read -rp "Voulez-vous lancer l'application maintenant ? (o/n) " answer
+    if [[ "$answer" =~ ^[OoYy] ]]; then
+        case "$OS" in
+            linux)   "${HOME}/.local/bin/${PROJECT_NAME}" & ;;
+            macos)   open "/Applications/${PROJECT_NAME}.app" ;;
+            windows) start "${APPDATA}\\Programs\\${PROJECT_NAME}\\${PROJECT_NAME}.exe" ;;
+        esac
     fi
-fi
+}
+
+# Main
+check_dependencies
+detect_os
+compile_project
+
+case "$OS" in
+    linux)   install_linux ;;
+    macos)   install_macos ;;
+    windows) install_windows ;;
+esac
+
+print_success "Installation terminée avec succès !"
+launch_application

@@ -1,0 +1,61 @@
+# Fichier .gitignore pour projet Rust
+
+### Fichiers générés par Cargo ###
+/target/
+**/*.rs.bk
+Cargo.lock
+
+### Fichiers IDE/Editeur ###
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ
+.idea/
+*.iml
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Vim
+*.swp
+*.swo
+
+### Fichiers systèmes ###
+.DS_Store
+Thumbs.db
+
+### Fichiers de compilation ###
+*.o
+*.so
+*.dll
+*.exe
+*.a
+
+### Fichiers de documentation ###
+/doc/
+/target/doc/
+
+### Fichiers environnement ###
+.env
+*.env
+
+### Fichiers de debug ###
+*.log
+*.tmp
+
+### Fichiers spécifiques au projet ###
+# Ignore les binaires de release sauf si nécessaires
+/release/
+
+# Fichiers assets temporaires
+/assets/tmp/
+
+### Rust spécifique ###
+# Fichiers de couverture de test
+/coverage/
+
+# Fichiers de benchmark
+**/*.bench

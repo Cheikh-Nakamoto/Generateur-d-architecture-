@@ -1,5 +1,5 @@
 [package]
-name = "screen-cast-structure-generator"
+name = "projet-structure-generator"
 version = "0.1.0"
 edition = "2021"  # Note: 2024 n'existe pas encore comme édition
 

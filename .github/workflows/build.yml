@@ -1,4 +1,4 @@
-name: Build Rust Project
+name: Build and Release projet-structure-generator
 
 on: [push, pull_request]
 
@@ -9,10 +9,10 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4  # Updated to v4
-        
+      - uses: actions/checkout@v4
+      
       - name: Install Rust
-        run: rustup update stable
+        run: rustup update stable && rustup default stable
         
       - name: Add Windows target
         if: matrix.os == 'windows-latest'
@@ -21,41 +21,42 @@ jobs:
       - name: Build
         run: cargo build --release
         
-      - name: Rename Windows executable
-        if: matrix.os == 'windows-latest'
-        run: mv target/release/screen-cast-structure-generator.exe target/release/screen-cast-structure-generator-windows.exe
-        
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4  # Updated to v4
+        uses: actions/upload-artifact@v4
         with:
-          name: screen-cast-structure-generator-${{ matrix.os }}
+          name: ${{ matrix.os }}-projet-structure-generator
           path: |
-            target/release/screen-cast-structure-generator
-            target/release/screen-cast-structure-generator.exe
+            target/release/projet-structure-generator
+            target/release/projet-structure-generator.exe
+          retention-days: 5
 
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Updated to v4
+      - uses: actions/checkout@v4
       
       - name: Download Linux Artifact
-        uses: actions/download-artifact@v4  # Updated to v4
+        uses: actions/download-artifact@v4
         with:
-          name: screen-cast-structure-generator-ubuntu-latest
+          name: ubuntu-latest-projet-structure-generator
           path: release/linux
       
       - name: Download Windows Artifact
-        uses: actions/download-artifact@v4  # Updated to v4
+        uses: actions/download-artifact@v4
         with:
-          name: screen-cast-structure-generator-windows-latest
+          name: windows-latest-projet-structure-generator
           path: release/windows
           
-      - name: Create GitHub Release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            release/linux/screen-cast-structure-generator
-            release/windows/screen-cast-structure-generator-windows.exe
+            release/linux/projet-structure-generator
+            release/windows/projet-structure-generator.exe
+          tag_name: v1.0.0
+          body: |
+            Release of projet-structure-generator
+            - Linux and Windows binaries included
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
