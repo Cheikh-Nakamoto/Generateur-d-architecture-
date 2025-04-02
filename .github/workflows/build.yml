@@ -4,15 +4,58 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+      
       - name: Install Rust
         run: rustup update stable
+        
+      - name: Add Windows target (if needed)
+        if: matrix.os == 'windows-latest'
+        run: rustup target add x86_64-pc-windows-msvc
+        
       - name: Build
         run: cargo build --release
+        
+      - name: Rename Windows executable
+        if: matrix.os == 'windows-latest'
+        run: mv target/release/screen-cast-structure-generator.exe target/release/screen-cast-structure-generator-windows.exe
+        
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: my-app
-          path: target/release/my-app
+          name: screen-cast-structure-generator-${{ matrix.os }}
+          path: |
+            target/release/screen-cast-structure-generator
+            target/release/screen-cast-structure-generator.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: screen-cast-structure-generator-ubuntu-latest
+          path: release/linux
+      
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: screen-cast-structure-generator-windows-latest
+          path: release/windows
+          
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/linux/screen-cast-structure-generator
+            release/windows/screen-cast-structure-generator-windows.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
