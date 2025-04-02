@@ -1,43 +1,28 @@
-# Documentation de la fonction `create_project_structure`
+# Générateur de Structure de Projet
 
 ## Description
 
-La fonction `create_project_structure` permet de générer une structure de dossiers et de fichiers à partir du contenu d'un fichier `README.md`. Elle analyse le fichier à la recherche de blocs de texte décrivant une arborescence et crée la structure correspondante sur le disque.
+Cette application GUI permet de générer automatiquement une structure de dossiers et de fichiers à partir d'un fichier README.md. Elle analyse le fichier à la recherche de blocs de texte décrivant une arborescence et crée la structure correspondante dans le dossier choisi.
+
+## Fonctionnalités
+
+- Interface graphique simple et intuitive
+- Sélection du fichier README.md par navigateur de fichiers
+- Sélection du dossier de sortie par navigateur de dossiers
+- Affichage des messages de succès ou d'erreur
+- Thème sombre ergonomique avec codes couleur
 
 ## Utilisation
 
-```sh
-./programme <chemin_readme> <dossier_sortie>
-```
+1. Lancez l'application
+2. Cliquez sur "📄 Sélectionner README.md" pour choisir votre fichier README
+3. Cliquez sur "📂 Sélectionner Dossier de Sortie" pour définir le dossier cible
+4. Cliquez sur "🚀 Générer Structure" pour créer la structure de projet
 
-### Arguments
+## Format du README.md
 
-- `readme_path` : Chemin vers le fichier `README.md` à analyser.
-- `output_dir` : Dossier où la structure de projet sera créée.
+L'application détecte les blocs de code markdown contenant une structure de projet. Par exemple :
 
-### Valeur de retour
-
-Retourne `Ok(())` si la structure est correctement générée, sinon une erreur (`Err`) en cas de problème d'accès aux fichiers ou de lecture.
-
-## Détails des étapes
-
-1. **Lecture du fichier `README.md`**
-   - Charge le contenu du fichier spécifié dans une chaîne de caractères.
-2. **Extraction de la structure des dossiers et fichiers**
-   - Utilise des expressions régulières pour détecter les blocs contenant une arborescence de projet.
-   - Filtre et normalise les chemins détectés.
-3. **Création de l'arborescence**
-   - Vérifie si chaque élément est un dossier ou un fichier.
-   - Crée les dossiers nécessaires.
-   - Crée les fichiers dans les bons emplacements.
-
-## Cas d'utilisation
-
-### 1. Génération automatique d'un projet à partir d'un `README.md`
-
-**Exemple de contenu `README.md`** :
-
-````
 ```plaintext
 src/
     main.rs
@@ -45,16 +30,27 @@ src/
 Cargo.toml
 README.md
 ```
-````
 
-**Commande d'exécution** :
+### Règles de détection
 
-```sh
-./programme README.md projet
+- Un élément est considéré comme un dossier s'il se termine par `/` ou s'il ne contient pas de `.` (point)
+- L'indentation permet de déterminer la hiérarchie des éléments
+- Les formats de bloc supportés incluent `plaintext`, `bash`, `sh`
+
+## Exemples
+
+### Exemple 1: Structure simple
+
+**Dans le README.md:**
+```plaintext
+src/
+    main.rs
+    lib.rs
+Cargo.toml
+README.md
 ```
 
-**Résultat attendu** :
-
+**Résultat généré:**
 ```
 projet/
 ├── src/
@@ -64,11 +60,9 @@ projet/
 ├── README.md
 ```
 
-### 2. Traitement d'une arborescence plus complexe
+### Exemple 2: Structure complexe
 
-**Exemple de contenu `README.md`** :
-
-````
+**Dans le README.md:**
 ```bash
 backend/
     models/
@@ -83,16 +77,8 @@ frontend/
     styles/
         main.css
 ```
-````
 
-**Commande d'exécution** :
-
-```sh
-./programme README.md mon_projet
-```
-
-**Résultat attendu** :
-
+**Résultat généré:**
 ```
 mon_projet/
 ├── backend/
@@ -109,22 +95,13 @@ mon_projet/
 │   │   ├── main.css
 ```
 
-## Fonctionnalités spécifiques
+## Limitations
 
-- **Détection intelligente des fichiers et dossiers** :
-  - Un élément est considéré comme un dossier s'il se termine par `/` ou s'il ne contient pas de `.` (point).
-- **Gestion des indentations** :
-  - Permet de reconstruire l'arborescence même avec une indentation variable.
-- **Suppression des doublons** :
-  - Trie et supprime les éléments en double pour éviter des erreurs.
+- Les liens symboliques ne sont pas pris en compte
+- Le format du bloc de texte doit être explicite
+- Les noms de fichiers contenant des espaces peuvent nécessiter une attention particulière
 
-## Limitations et améliorations possibles
+## Prérequis
 
-- Actuellement, les liens symboliques ne sont pas pris en compte.
-- Le format du bloc de texte (ex: `plaintext`, `bash`, `sh`) doit être explicite.
-- Peut être amélioré pour mieux gérer les fichiers avec des espaces dans leurs noms.
-
-## Conclusion
-
-Cette fonction est idéale pour automatiser la création de structures de projets à partir de spécifications contenues dans un `README.md`. Elle s'intègre parfaitement dans des flux de travail DevOps ou pour générer rapidement des projets selon des standards préétablis.
-
+- Compatible avec Windows, macOS et Linux
+- Nécessite les droits d'écriture dans le dossier de destination

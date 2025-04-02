@@ -23,6 +23,6 @@ fn main() -> io::Result<()> {
         native_options,
         Box::new(|_cc| Ok(Box::new(MyApp::default()))),
     );
-
+    
     Ok(())
 }
