@@ -21,14 +21,27 @@ color-eyre = "0.6.2"
 
 # Pour la journalisation
 log = "0.4.20"
-env_logger = "0.10.0"
+env_logger = "0.11.8"
 
 rfd = "0.15.3"     # Pour ouvrir un sélecteur de fichiers cross-platform
 # Pour eframe, vérifiez les fonctionnalités disponibles
 
-# Pour eframe, vérifiez les fonctionnalités disponibles
-# Exemple avec fonctionnalités corrigées
-eframe = { version = "0.24.0", features = ["persistence", "glow"] }  # Ajustez selon les fonctionnalités disponibles
+
+egui = "0.31.1"
+eframe = { version = "0.31.1", default-features = false, features = [
+    "accesskit",     # Make egui compatible with screen readers. NOTE: adds a lot of dependencies.
+    "default_fonts", # Embed the default egui fonts.
+    "glow",          # Use the glow rendering backend. Alternative: "wgpu".
+    "persistence",   # Enable restoring app state when restarting the app.
+    "wayland",       # To support Linux (and CI)
+] }
 # Pour le support d'image
 egui_extras = { version = "*", features = ["all_loaders"] }
 image = { version = "0.25", features = ["jpeg", "png"] } # Add the types you want support for
+
+[profile.release]
+opt-level = 2 # fast and small wasm
+
+# Optimize all dependencies even in debug builds:
+[profile.dev.package."*"]
+opt-level = 2
