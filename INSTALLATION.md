@@ -3,6 +3,9 @@
 
 Ce document explique comment installer le Générateur de Structure de Projet sur différents systèmes d'exploitation.
 
+## 📦 Binaires pré-compilés
+Les binaires pré-compilés sont disponibles sur : [https://github.com/Cheikh-Nakamoto/Generateur-d-architecture-/releases/latest](https://github.com/Cheikh-Nakamoto/Generateur-d-architecture-/releases/latest)
+
 ## Prérequis
 
 Avant de commencer l'installation, assurez-vous d'avoir installé les logiciels suivants sur votre système :
