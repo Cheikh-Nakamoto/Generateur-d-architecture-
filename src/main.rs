@@ -9,7 +9,7 @@ fn main() -> io::Result<()> {
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([150.0, 200.0])  // Modifié de [200.0, 100.0] à [150.0, 200.0]
-            .with_resizable(false)
+            .with_resizable(true)
             .with_icon(
                 // NOTE: Adding an icon is optional
                 eframe::icon_data::from_png_bytes(&include_bytes!("./assets/ferris.png")[..])
