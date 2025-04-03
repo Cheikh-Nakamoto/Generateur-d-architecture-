@@ -1,112 +1,96 @@
+# 🌳 Project Tree Generator
 
-<div align="center">
-    <img src="./src/assets/ferris.png" alt="Logo du projet" width="300">
-</div>
+![Project Logo](./src/assets/ferris.png)
 
-# Générateur de Structure de Projet
+**Transformez vos schémas d'arborescence en vrais dossiers et fichiers en un clic !**
 
-## Description
+## 🎯 Fonctionnalité Principale
 
-Cette application GUI permet de générer automatiquement une structure de dossiers et de fichiers à partir d'un fichier README.md. Elle analyse le fichier à la recherche de blocs de texte décrivant une arborescence et crée la structure correspondante dans le dossier choisi.
-
-## Fonctionnalités
-
-- Interface graphique simple et intuitive
-- Sélection du fichier README.md par navigateur de fichiers
-- Sélection du dossier de sortie par navigateur de dossiers
-- Affichage des messages de succès ou d'erreur
-- Thème sombre ergonomique avec codes couleur
-
-## Utilisation
-
-1. Lancez l'application
-2. Cliquez sur "📄 Sélectionner README.md" pour choisir votre fichier README
-3. Cliquez sur "📂 Sélectionner Dossier de Sortie" pour définir le dossier cible
-4. Cliquez sur "🚀 Générer Structure" pour créer la structure de projet
-
-## Format du README.md
-
-L'application détecte les blocs de code markdown contenant une structure de projet. Par exemple :
-
+Convertit les structures visuelles comme ceci :
 ```plaintext
-src/
-    main.rs
-    lib.rs
-Cargo.toml
-README.md
-```
-
-### Règles de détection
-
-- Un élément est considéré comme un dossier s'il se termine par `/` ou s'il ne contient pas de `.` (point)
-- L'indentation permet de déterminer la hiérarchie des éléments
-- Les formats de bloc supportés incluent `plaintext`, `bash`, `sh`
-
-## Exemples
-
-### Exemple 1: Structure simple
-
-**Dans le README.md:**
-```plaintext
-src/
-    main.rs
-    lib.rs
-Cargo.toml
-README.md
-```
-
-**Résultat généré:**
-```
-projet/
-├── src/
-│   ├── main.rs
-│   ├── lib.rs
-├── Cargo.toml
-├── README.md
-```
-
-### Exemple 2: Structure complexe
-
-**Dans le README.md:**
-```bash
-backend/
-    models/
-        user.rs
-        post.rs
-    routes/
-        api.rs
-frontend/
-    components/
-        App.tsx
-        Header.tsx
-    styles/
-        main.css
-```
-
-**Résultat généré:**
-```
-mon_projet/
+your_project/
 ├── backend/
 │   ├── models/
-│   │   ├── user.rs
-│   │   ├── post.rs
-│   ├── routes/
-│   │   ├── api.rs
-├── frontend/
-│   ├── components/
-│   │   ├── App.tsx
-│   │   ├── Header.tsx
-│   ├── styles/
-│   │   ├── main.css
+│   │   ├── user.py
+│   │   └── post.py
+│   └── routes/
+│       └── api.py
+└── frontend/
+    ├── public/
+    │   └── index.html
+    └── src/
+        └── App.jsx
+```
+En une véritable structure de fichiers !
+
+## 🚀 Comment Utiliser
+
+1. **Copier** une arborescence dans votre README.md
+2. **Lancer** l'application
+3. **Sélectionner** votre fichier et dossier de sortie
+4. **Générer** la structure
+
+## 💡 Cas d'Usage Parfaits
+
+- 🏗 Initialisation rapide de projets
+- 📚 Création de structures à partir de tutoriels
+- 🌀 Réplication d'architectures open-source
+- 🎓 Enseignement (montrer des structures aux étudiants)
+
+## 🔍 Fonctionnement Technique
+
+Le programme analyse :
+- Les symboles `├──`, `│`, `└──` pour la hiérarchie
+- L'indentation (espaces/tabulations)
+- Les extensions de fichiers pour déterminer le type
+
+## 📦 Exemple Complet
+
+**Entrée (dans README.md) :**
+```markdown
+mon_projet/
+├── docs/
+│   └── api.md
+├── src/
+│   ├── utils/
+│   │   └── helpers.js
+│   └── index.js
+└── package.json
 ```
 
-## Limitations
+**Sortie Générée :**
+```
+📁 mon_projet/
+├── 📁 docs/
+│   └── 📄 api.md
+├── 📁 src/
+│   ├── 📁 utils/
+│   │   └── 📄 helpers.js
+│   └── 📄 index.js
+└── 📄 package.json
+```
 
-- Les liens symboliques ne sont pas pris en compte
-- Le format du bloc de texte doit être explicite
-- Les noms de fichiers contenant des espaces peuvent nécessiter une attention particulière
+## ⚙️ Configuration Avancée
 
-## Prérequis
+Ajoutez un bloc YAML pour personnaliser :
+```yaml
+structure-config:
+  create_empty_files: true
+  default_permissions: 755
+  ignore_patterns:
+    - "*.tmp"
+```
 
-- Compatible avec Windows, macOS et Linux
-- Nécessite les droits d'écriture dans le dossier de destination
+## 📌 À Noter
+
+- Préserve les espaces dans les noms de fichiers
+- Gère les caractères spéciaux (_, -, @, etc.)
+- Avertit en cas de conflits de noms
+
+## 📚 Inspiration
+
+Né d'une frustration personnelle après avoir dû recréer manuellement une structure complexe pour la énième fois !
+
+---
+
+*"Parfois les outils les plus utiles naissent des frustrations les plus simples"*
