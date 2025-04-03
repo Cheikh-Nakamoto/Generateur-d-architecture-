@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -47,16 +47,26 @@ jobs:
         with:
           name: windows-latest-projet-structure-generator
           path: release/windows
+
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-latest-projet-structure-generator
+          path: release/macos
           
+      - name: Generate Release Tag
+        run: echo "TAG_NAME=v$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             release/linux/projet-structure-generator
             release/windows/projet-structure-generator.exe
-          tag_name: v1.0.0
+            release/macos/projet-structure-generator
+          tag_name: ${{ env.TAG_NAME }}
           body: |
             Release of projet-structure-generator
-            - Linux and Windows binaries included
+            - Linux, Windows, and macOS binaries included
         env:
-          GITHUB_TOKEN: ${{ secrets.REALEASE_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.REALEASE_TOKEN }}
