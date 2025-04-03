@@ -23,16 +23,11 @@ Téléchargez la dernière version : [Releases](https://github.com/Cheikh-Nakamo
 2. Décompressez l'archive
 3. Exécutez le binaire
 
-### Via Cargo
-```bash
-cargo install project-tree-generator
-```
-
 ## 🖥 Comment Utiliser
 
 1. **Copiez** une arborescence depuis votre README.md
 2. **Lancez** l'application
-3. **Collez** la structure ou sélectionnez un fichier
+3. **Collez** la structure dans un fichier et sélectionnez ce fichier
 4. **Choisissez** le dossier de destination
 5. **Génerez** la structure
 
@@ -82,7 +77,7 @@ Les contributions sont les bienvenues !
 MIT License - [Lire la licence complète](LICENSE)
 
 ```
-Copyright 2023 VotreNom
+Copyright 2023 Cheikh-nakamoto 
 
 Permission est accordée, gratuitement, à toute personne obtenant une copie
 de ce logiciel et des fichiers de documentation associés (le "Logiciel"), 
@@ -107,7 +102,7 @@ SON UTILISATION, OU D'AUTRES OPÉRATIONS EFFECTUÉES AVEC LE LOGICIEL.
 
 ## 💌 Contact
 
-Pour toute question : [votre@email.com](mailto:votre@email.com)
+Pour toute question : [feppdougou@gmail.com](mailto: feppdougou@gmail.com)
 
 ---
 
