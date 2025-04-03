@@ -1,4 +1,5 @@
-# Guide d'installation - Générateur de Structure de Projet
+# 🌳 Guide d'installation - Générateur de Structure de Projet
+![Project Logo](./src/assets/ferris.png)
 
 Ce document explique comment installer le Générateur de Structure de Projet sur différents systèmes d'exploitation.
 
