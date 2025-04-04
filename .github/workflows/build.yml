@@ -87,4 +87,4 @@ jobs:
             Release of projet-structure-generator
             - Linux, Windows, and macOS binaries included
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REALEASE_TOKEN }}
