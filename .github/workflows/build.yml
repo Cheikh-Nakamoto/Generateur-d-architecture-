@@ -26,6 +26,9 @@ jobs:
         
       - name: Build
         run: cargo build --release
+
+      - name: Debug Build Output
+        run: ls -R target/release
         
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -42,9 +45,9 @@ jobs:
     if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Remove old artifacts
-        run: rm -rf release/*
+
+      - name: Create Release Directory
+        run: mkdir -p release/linux release/windows release/macos
       
       - name: Download Linux Artifact
         uses: actions/download-artifact@v4
@@ -64,6 +67,9 @@ jobs:
           name: macos-latest-projet-structure-generator
           path: release/macos
           
+      - name: Debug macOS Artifact
+        run: ls -R release/macos
+
       - name: Generate Release Tag
         run: echo "TAG_NAME=v$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
