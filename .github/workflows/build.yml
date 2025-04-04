@@ -1,13 +1,3 @@
-name: Build and Release projet-structure-generator
-
-on: 
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   build:
     strategy:
@@ -27,16 +17,21 @@ jobs:
       - name: Build
         run: cargo build --release
 
-      - name: Debug Build Output
-        run: ls -R target/release
-        
+      - name: Rename Binary (Linux & macOS)
+        if: matrix.os != 'windows-latest'
+        run: mv target/release/projet-structure-generator target/release/projet-structure-generator-${{ matrix.os }}
+
+      - name: Rename Binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: mv target/release/projet-structure-generator.exe target/release/projet-structure-generator-windows.exe
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-projet-structure-generator
           path: |
-            target/release/projet-structure-generator
-            target/release/projet-structure-generator.exe
+            target/release/projet-structure-generator-${{ matrix.os }}
+            target/release/projet-structure-generator-windows.exe
           retention-days: 5
 
   release:
@@ -45,7 +40,7 @@ jobs:
     if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
-
+      
       - name: Create Release Directory
         run: mkdir -p release/linux release/windows release/macos
       
@@ -67,9 +62,6 @@ jobs:
           name: macos-latest-projet-structure-generator
           path: release/macos
           
-      - name: Debug macOS Artifact
-        run: ls -R release/macos
-
       - name: Generate Release Tag
         run: echo "TAG_NAME=v$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
@@ -77,9 +69,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            release/linux/projet-structure-generator
-            release/windows/projet-structure-generator.exe
-            release/macos/projet-structure-generator
+            release/linux/projet-structure-generator-ubuntu-latest
+            release/windows/projet-structure-generator-windows.exe
+            release/macos/projet-structure-generator-macos-latest
           tag_name: ${{ env.TAG_NAME }}
           body: |
             Release of projet-structure-generator
