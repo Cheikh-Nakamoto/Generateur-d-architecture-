@@ -1,3 +1,13 @@
+name: Build and Release projet-structure-generator
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
   build:
     strategy:
@@ -6,29 +16,29 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Rust
         run: rustup update stable && rustup default stable
-        
+
       - name: Add Windows target
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows'
         run: rustup target add x86_64-pc-windows-msvc
-        
+
       - name: Build
         run: cargo build --release
 
       - name: Rename Binary (Linux & macOS)
-        if: matrix.os != 'windows-latest'
+        if: runner.os != 'Windows'
         run: mv target/release/projet-structure-generator target/release/projet-structure-generator-${{ matrix.os }}
 
       - name: Rename Binary (Windows)
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows'
         run: mv target/release/projet-structure-generator.exe target/release/projet-structure-generator-windows.exe
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-projet-structure-generator
+          name: projet-structure-generator-${{ matrix.os }}
           path: |
             target/release/projet-structure-generator-${{ matrix.os }}
             target/release/projet-structure-generator-windows.exe
@@ -47,19 +57,19 @@ jobs:
       - name: Download Linux Artifact
         uses: actions/download-artifact@v4
         with:
-          name: ubuntu-latest-projet-structure-generator
+          name: projet-structure-generator-ubuntu-latest
           path: release/linux
       
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
-          name: windows-latest-projet-structure-generator
+          name: projet-structure-generator-windows-latest
           path: release/windows
 
       - name: Download macOS Artifact
         uses: actions/download-artifact@v4
         with:
-          name: macos-latest-projet-structure-generator
+          name: projet-structure-generator-macos-latest
           path: release/macos
           
       - name: Generate Release Tag
@@ -77,4 +87,4 @@ jobs:
             Release of projet-structure-generator
             - Linux, Windows, and macOS binaries included
         env:
-          GITHUB_TOKEN: ${{ secrets.REALEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
